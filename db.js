@@ -1,28 +1,48 @@
 const { Pool, Client } = require('pg')
+
+const fromDate = new Date();
+
+
 const pool = new Pool({
-  user: 'root',
-  // host: 'database.server.com',
+  user: 'air',
+  host: 'localhost',
   database: 'demo',
   password: '',
-  port: 4000,
+  port: 5432
 })
 
-pool.query('SELECT NOW()', (err, res) => {
-  console.log(err, res)
-  pool.end()
+pool.connect((err, client, done) => {
+  if (err) throw err
+  client.query('SELECT * FROM photos', (err, res) => {
+    done()
+    if (err) {
+      console.log(err.stack)
+    } else {
+      const toDate = new Date();
+      const elapsed = toDate.getTime() - fromDate.getTime();
+      console.log(elapsed)
+      pool.end()
+    }
+  })
 })
 
-const client = new Client({
-  user: 'dbuser',
-  host: 'database.server.com',
-  database: 'mydb',
-  password: 'secretpassword',
-  port: 4000,
-})
 
-client.connect()
 
-client.query('SELECT * FROM cart', (err, res) => {
-  console.log(err, res)
-  client.end()
-})
+
+// const client = new Client({
+//   user: 'air',
+//   host: 'localhost',
+//   database: 'demo',
+//   password: '',
+//   port: 5432
+// })
+
+// client.connect()
+// client.query('SELECT * FROM photos', (err, res) => {
+//   console.log(err, 1)
+//   const toDate = new Date();
+//   const elapsed = toDate.getTime() - fromDate.getTime();
+//   console.log(elapsed)
+//   client.end()
+// })
+

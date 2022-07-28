@@ -1,11 +1,15 @@
 
+CREATE DATABASE IF NOT EXISTS demo;
+
+
+\c demo;
 
 CREATE TABLE IF NOT EXISTS`Products` (
   `id` INTEGER NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(80) NOT NULL,
   `slogan` VARCHAR(1000) NOT NULL,
   `description` VARCHAR(300) NOT NULL,
-  `default price` INTEGER NOT NULL,
+  `default_price` INTEGER NOT NULL,
   `category` VARCHAR(80) NOT NULL,
   PRIMARY KEY (`id`)
 );
@@ -75,3 +79,9 @@ ALTER TABLE `related` ADD FOREIGN KEY (current_product) REFERENCES `Products` (`
 ALTER TABLE `photos` ADD FOREIGN KEY (styleID) REFERENCES `Product Styles` (`id`);
 ALTER TABLE `cart` ADD FOREIGN KEY (product_id) REFERENCES `Products` (`id`);
 
+COPY features FROM '/Users/air/Desktop/data/features.csv' DELIMITER ',' CSV HEADER;
+COPY styles FROM '/Users/air/Desktop/data/styles.csv' DELIMITER ',' CSV HEADER;
+COPY cart FROM '/Users/air/Desktop/data/cart.csv' DELIMITER ',' CSV HEADER;
+COPY product FROM '/Users/air/Desktop/data/product.csv' DELIMITER ',' CSV HEADER;
+COPY related FROM '/Users/air/Desktop/data/related.csv' DELIMITER ',' CSV HEADER;
+COPY photos FROM '/Users/air/Desktop/data/photos.csv' DELIMITER ',' CSV HEADER;
