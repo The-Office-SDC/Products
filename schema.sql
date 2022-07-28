@@ -4,14 +4,13 @@ CREATE DATABASE IF NOT EXISTS demo;
 
 \c demo;
 
-CREATE TABLE IF NOT EXISTS`Products` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(80) NOT NULL,
-  `slogan` VARCHAR(1000) NOT NULL,
-  `description` VARCHAR(300) NOT NULL,
-  `default_price` INTEGER NOT NULL,
-  `category` VARCHAR(80) NOT NULL,
-  PRIMARY KEY (`id`)
+CREATE TABLE product(
+  id serial PRIMARY KEY not null,
+  name varchar(50) not null,
+  slogan varchar(200) not null,
+  description varchar(500) not null,
+  category varchar(20) not null,
+  default_price int not null
 );
 
 
@@ -24,16 +23,14 @@ CREATE TABLE IF NOT EXISTS`Product Features` (
 );
 
 
-CREATE TABLE IF NOT EXISTS`Product Styles` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
-  `product id(foreign key)` INTEGER NOT NULL,
-  `name` VARCHAR(50) NOT NULL,
-  `original price` INTEGER  DEFAULT NULL,
-  `sale price` INTEGER  DEFAULT NULL,
-  `default?` int DEFAULT 0,
-  PRIMARY KEY (`id`)
+CREATE TABLE IF NOT EXISTS styles(
+  id serial PRIMARY KEY not null,
+  productId int not null,
+  name varchar(50) not null,
+  sale_price varchar(10) not null,
+  original_price int not null,
+  default_style int not null
 );
-
 
 
 CREATE TABLE IF NOT EXISTS`Product Style SKU-Size` (
@@ -46,29 +43,25 @@ CREATE TABLE IF NOT EXISTS`Product Style SKU-Size` (
 
 
 
-CREATE TABLE IF NOT EXISTS`related` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
-  `current_product` INTEGER NOT NULL,
-  `compared_product` INTEGER NOT NULL,
-  `productID` INTEGER NULL DEFAULT NULL,
-  PRIMARY KEY (`id`)
+CREATE TABLE related(
+  id varchar(10),
+  current_product_id varchar(10),
+  related_product_id varchar(10)
 );
 
 
-CREATE TABLE IF NOT EXISTS `photos` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
-  `styleID` INTEGER NOT NULL,
-  `thumbnail` VARCHAR(10000) NOT NULL,
-  `url` VARCHAR(10000) NOT NULL,
-  PRIMARY KEY (`id`)
+CREATE TABLE photos(
+  id serial PRIMARY KEY not null,
+  styleid int not null,
+  thumbnail_url varchar(100000) not null,
+  url varchar(100000) not null
 );
 
-CREATE TABLE IF NOT EXISTS`cart` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
-  `user_session` INTEGER NOT NULL,
-  `product_id` INTEGER NOT NULL,
-  `active` INTEGER NOT NULL,
-  PRIMARY KEY (`id`)
+CREATE TABLE IF NOT EXISTS cart(
+  id serial PRIMARY KEY not null,
+  user_session int not null,
+  product_id int not null,
+  active int not null
 );
 
 
