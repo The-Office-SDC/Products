@@ -10,109 +10,113 @@ const pool = new Pool({
   port: 5432
 })
 
-// var findCart = function (callback) {
-//   pool.connect((err, client, done) => {
-//     if (err) throw err
-//     client.query(
-//       `SELECT '{"a": {"key":"value"}, "b": 2, "c": true}'::jsonb - 'a' `,
-//       (err, res) => {
-//         done()
-//         if (err) {
-//           console.log(err.stack)
-//         } else {
-//           // const toDate = new Date();
-//           // const elapsed = toDate.getTime() - fromDate.getTime();
-//           console.log('before callback', res.rows)
-//           callback(res.rows)
-//           pool.end()
-//         }
-//       }
-//     )
-//   })
-// }
-
-var findCart = (function (callback) {
+var findProducts = function (callback, start, end) {
   pool.connect((err, client, done) => {
     if (err) throw err
     client.query(
-      `SELECT json_build_object('cart',(SELECT json_agg(row_to_json(cart))
-    FROM cart))`,
+      `SELECT * from product where id > ${start - 1} and id < ${end + 1}`,
       (err, res) => {
         done()
         if (err) {
           console.log(err.stack)
         } else {
-          // const toDate = new Date();
-          // const elapsed = toDate.getTime() - fromDate.getTime();
-          console.log('before callback', res.rows)
+          // console.log('before callback', res.rows)
           callback(res.rows)
           pool.end()
         }
       }
     )
   })
-})
+}
+// select json_agg(row_to_json(tu))
+//       from (
+//           select id, name,(
+//               select row_to_json(features) from features where features.product_id = id
+//           ) team
+//       from product
+//   ) tu
 
-// `select json_build_object(
-//         'persons', json_agg(json_build_object(
-//         'person_name', p.name,
-//         'cars', cars))
-//          ) persons
-// from person p
-// left join (select personid, json_agg(json_build_object(
-//                 'carid', c.id,
-//                 'type', c.type,
-//                 'wheels', wheels)
-//           ) cars
-//      from
-//         car c
-//         left join (
-//             select
-//                 carid,
-//                 json_agg(
-//                     json_build_object(
-//                         'which', w.whichone,
-//                         'serial number', w.serialnumber
-//                     )
-//                 ) wheels
-//             from wheel w
-//             group by 1
-//         ) w on c.id = w.carid
-//     group by personid
-// ) c on p.id = c.personid;
-// `
-
-var findStyles = function (callback, id) {
+var findFeatures = function (callback, id) {
+  console.log('iiiidddd',id)
   pool.connect((err, client, done) => {
     if (err) throw err
     client.query(
-      // `SELECT row_to_json("cart")
-      // FROM "cart"
-      // WHERE id = 1;`,
-      `SELECT json_build_object(
-        'product_id', (select productid from "styles" where productid = ${id} limit 1),
-        'results', (SELECT json_agg(row_to_json("styles")) from "styles" where productid = ${id})
-      )`,
-      // `SELECT json_build_object(
-      //   'cartid', (SELECT json_agg(row_to_json("ci")) from (SELECT id FROM "cart" where id =1) as ci),
-      //   'cart', (SELECT json_agg(row_to_json("cart")) from "cart")
-      // )`,
+      `select json_agg(row_to_json(tu))
+       from (
+          select id,name,slogan,description,category,default_price,(
+              select json_agg(row_to_json(features)) FROM (select feature,value,product_id from "features" ) as features  where features.product_id = ${id}
+           ) as features
+       from product where id = ${id}
+
+      ) tu `,
       (err, res) => {
         done()
         if (err) {
           console.log(err.stack)
         } else {
-          console.log('before callback', res.rows[0].json_build_object)
-          callback(res.rows[0].json_build_object)
-          // pool.end()
+          console.log('before callback', res.rows[0].json_agg)
+          callback(res.rows[0].json_agg)
+          pool.end()
         }
       }
     )
   })
 }
 
-exports.findCart = findCart
+var findStyles = function (callback) {
+  pool.connect((err, client, done) => {
+    if (err) throw err
+    client.query(
+      `select json_build_object(
+        'product_id',(select productid from "styles" where productid = '${id.toString()}' limit 1),
+        'results', json_agg(json_build_object(
+        'style_id', style_id,
+        'name',name,
+        'original_price',original_price,
+        'sale_price',sale_price,
+        'default?',default_style
+        )) ) p
+        from styles where productid = '${id.toString()}'
+        left join (select styleid, json_agg(json_build_object(
+          'size', size,
+          'quantity', quantity
+          )
+          ) cars
+         from skus c
+        ) c on p.style_id = c.styleid;
+      `,
+      (err, res) => {
+        done()
+        if (err) {
+          console.log(err.stack)
+        } else {
+          console.log('before callback', res.rows[0])
+          callback(res.rows[0])
+          pool.end()
+        }
+      }
+    )
+  })
+}
+// select row_to_json(t)
+// from (
+//   select text, pronunciation,
+//     (
+//       select array_to_json(array_agg(row_to_json(d)))
+//       from (
+//         select part_of_speech, body
+//         from definitions
+//         where word_id=words.id
+//         order by position asc
+//       ) d
+//     ) as definitions
+//   from words
+//   where text = 'autumn'
+// ) t
+
+exports.findProducts = findProducts
 exports.findStyles = findStyles
+exports.findFeatures = findFeatures
 
 // const client = new Client({
 //   user: 'air',
