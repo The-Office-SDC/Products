@@ -14,7 +14,7 @@ var findProducts = function (callback, start, end) {
   pool.connect((err, client, done) => {
     if (err) throw err
     client.query(
-      `SELECT * from product where id > ${start - 1} and id < ${end + 1}`,
+      `SELECT * from product where id > ${start - 1 } and id < ${end + 1 }`,
       (err, res) => {
         done()
         if (err) {
@@ -22,7 +22,6 @@ var findProducts = function (callback, start, end) {
         } else {
           // console.log('before callback', res.rows)
           callback(res.rows)
-          pool.end()
         }
       }
     )
@@ -49,16 +48,13 @@ var findFeatures = function (callback, id) {
         } else {
           console.log('before callback', res.rows[0].json_agg)
           callback(res.rows[0].json_agg)
-          pool.end()
         }
       }
     )
   })
 }
-//
 
-      // ( select json_agg(row_to_json("styles")) from) from "styles"
-      // )
+
 var findStyles = function (callback,id) {
   pool.connect((err, client, done) => {
     if (err) throw err
@@ -69,22 +65,47 @@ var findStyles = function (callback,id) {
           select json_agg(row_to_json("styles")) from (select style_id,productid,name,original_price,sale_price,default_style as default,
              (
               select json_agg(row_to_json("photos")) from "photos" where styleid = styles.style_id
-             )as photos
+             )as photos,
+               (
+                select json_agg(row_to_json("skus")) from "skus" where styleid = styles.style_id
+
+               ) as  skus
              from "styles") as styles where productid = '${id}'
           ) as results
        from styles where productid = '${id}'
       ) tu
-
-
       `,
       (err, res) => {
         done()
         if (err) {
           console.log(err.stack)
         } else {
-          console.log('before callback', res.rows[0].json_agg)
-          callback(res.rows[0].json_agg[0])
-          pool.end()
+          console.log('before callback', res.rows)
+          if(res.rows[0].json_agg){
+            callback(res.rows[0].json_agg)
+          }else{
+            console.log('failed')
+            callback('null')
+          }
+        }
+      }
+    )
+  })
+}
+
+var findRelated = function (callback, id) {
+  console.log(id)
+  pool.connect((err, client, done) => {
+    if (err) throw err
+    client.query(
+      `select array_agg(related_product_id) as tag_arr from related  where current_product_id = ${id};`,
+      (err, res) => {
+        done()
+        if (err) {
+          console.log(err.stack)
+        } else {
+          // console.log('before callback', res.rows)
+          callback(res.rows[0].tag_arr)
         }
       }
     )
@@ -92,19 +113,10 @@ var findStyles = function (callback,id) {
 }
 
 
-// select json_agg(row_to_json(tu))
-//       from (
-//           select id, name,(
-//               select row_to_json(features) from features where features.product_id = id
-//           ) team
-//       from product
-//   ) tu
-
-
-
 exports.findProducts = findProducts
 exports.findStyles = findStyles
 exports.findFeatures = findFeatures
+exports.findRelated = findRelated
 
 // const client = new Client({
 //   user: 'air',
