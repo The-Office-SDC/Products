@@ -132,3 +132,20 @@ left join (select personid, json_agg(json_build_object(
 //     )
 //   })
 // }
+
+
+// select row_to_json(t)
+// from (
+//   select text, pronunciation,
+//     (
+//       select array_to_json(array_agg(row_to_json(d)))
+//       from (
+//         select part_of_speech, body
+//         from definitions
+//         where word_id=words.id
+//         order by position asc
+//       ) d
+//     ) as definitions
+//   from words
+//   where text = 'autumn'
+// ) t
