@@ -88,7 +88,7 @@
 // }
 
 
-
+From teammate:
 // `SELECT r.id review_id, r.rating, r.summary, r.recommend, r.response, r.body, r.date, r.reviewer_name, r.helpfulness,
 //   json_agg(rp) photos
 //   FROM reviews r
@@ -114,3 +114,45 @@
 //   console.log(elapsed)
 //   client.end()
 // })
+
+
+
+HIGHTLIGHT
+
+// var findStyles = function (callback,id) {
+//   pool.connect((err, client, done) => {
+//     if (err) throw err
+//     client.query(
+//       `select json_agg(row_to_json(tu)) from (
+//           select productid,
+//           (
+//           select json_agg(row_to_json("styles")) from (select style_id,productid,name,original_price,sale_price,default_style as default,
+//              (
+//               select json_agg(row_to_json("photos")) from "photos" where styleid = styles.style_id
+//              )as photos,
+//                (
+//                 select json_agg(row_to_json("skus")) from "skus" where styleid = styles.style_id
+
+//                ) as  skus
+//              from "styles") as styles where productid = '${id}'
+//           ) as results
+//        from styles where productid = '${id}'
+//       ) tu
+//       `,
+//       (err, res) => {
+//         done()
+//         if (err) {
+//           console.log(err.stack)
+//         } else {
+//           console.log('before callback', res.rows)
+//           if(res.rows[0].json_agg){
+//             callback(res.rows[0].json_agg[0])
+//           }else{
+//             console.log('failed')
+//             callback('null')
+//           }
+//         }
+//       }
+//     )
+//   })
+// }

@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const { findProducts, findStyles,findFeatures } = require('./db.js')
+const { findProducts, findStyles,findFeatures,findRelated } = require('./db.js')
 const url = require('url')
 
 app.get('/products/', (req, res) => {
