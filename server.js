@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const { findProducts, findStyles,findFeatures,findRelated } = require('./db.js')
+const { findProducts, findStyles,findFeatures } = require('./db.js')
 const url = require('url')
 
 app.get('/products/', (req, res) => {
@@ -34,6 +34,17 @@ app.get('/products/:id/related',(req,res)=>{
     res.status(200).send(data)
   }, id)
 })
+
+app.get('/products/:id/',(req,res)=>{
+  var id = req.params.id;
+  findFeatures(function (data) {
+    res.status(200).send(data)
+  }, id)
+})
+
+
+
+
 
 app.listen(3000, () => {
   console.log(`listening on port 3000`)
