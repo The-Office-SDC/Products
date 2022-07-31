@@ -156,3 +156,63 @@ HIGHTLIGHT
 //     )
 //   })
 // }
+
+
+partial works:
+`SELECT productid, (select json_agg(objone) results FROM
+
+(SELECT  r.style_id,name,sale_price,original_price,default_style as "default?",
+json_agg(rp) photos,
+json_build_object(k.id,json_build_object('quantity',k.quantity,'size',k.size)) skus
+FROM styles r
+INNER JOIN photos rp
+ON rp.styleid = r.style_id
+
+INNER JOIN skus k
+ON r.style_id = k.styleid
+
+WHERE r.productid = '${id}'
+GROUP BY style_id,k.id
+)AS objone)
+
+from styles where productid = '${id}'
+GROUP BY style_id
+`
+
+Not work
+ `
+SELECT productid,
+(
+SELECT json_agg(row_to_json("styles")) from (select style_id,productid,name,original_price,sale_price,default_style as "default?",
+    (
+    SELECT json_agg(row_to_json("photos")) from "photos" where styleid = styles.style_id
+    )as photos,
+        (select json_object_agg() from "skus" where skus.styleid = style_id)AS skus
+
+    from "styles") as styles where productid = '${id}'
+) as results
+
+from styles
+
+where productid = '${id}'`
+
+
+
+issues with GROUP BY :
+`SELECT productid, (select json_agg(objone) results FROM
+
+        (SELECT  r.style_id,name,sale_price,original_price,default_style as "default?",
+        json_agg(rp) photos,
+         (select json_build_object(k.id,json_build_object('quantity',k.quantity,'size',k.size) )AS skus  GROUP BY k.id)
+        FROM styles r
+        LEFT OUTER JOIN photos rp
+        ON rp.styleid = r.style_id
+
+        LEFT JOIN skus k
+        ON r.style_id = k.styleid
+
+        WHERE r.productid = '${id}'
+        GROUP BY style_id,k.id
+        ) AS objone)
+
+        from styles where productid = '${id}'`

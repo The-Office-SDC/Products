@@ -28,27 +28,37 @@ var findProducts = function (callback, start, end) {
   })
 }
 
+
   var findStyles = function (callback, id) {
     pool.connect((err, client, done) => {
       if (err) throw err
       client.query(
-        `SELECT productid, (select json_agg(objone) results FROM
+
+       `SELECT productid, (select json_agg(objone) results FROM
 
         (SELECT  r.style_id,name,sale_price,original_price,default_style as "default?",
-        json_agg(rp) photos
+        json_agg(rp) photos,
+         (json_build_object(k.id,(json_build_object('quantity',quantity,'size',size))))skus
         FROM styles r
         LEFT OUTER JOIN photos rp
         ON rp.styleid = r.style_id
-        where r.productid = '${id}'
-        GROUP BY style_id) AS objone)
 
-        from styles where productid = '${id}'`,
+        LEFT JOIN skus k
+        ON r.style_id = k.styleid
+
+        WHERE r.productid = '${id}'
+        GROUP BY style_id,k.id
+        ) AS objone)
+
+        from styles where productid = '${id}'`
+      ,
+
         (err, res) => {
           done()
         if (err) {
           console.log(err.stack)
         } else {
-          console.log('before callback', res.rows)
+          // console.log('before callback', res.rows)
           if(res.rows[0]){
             callback(res.rows[0])
           }else{
@@ -63,9 +73,8 @@ var findProducts = function (callback, start, end) {
 
 
 
-
 var findFeatures = function (callback, id) {
-  console.log('iiiidddd',id)
+  console.log('find the product features id',id)
   pool.connect((err, client, done) => {
     if (err) throw err
     client.query(
@@ -81,7 +90,7 @@ var findFeatures = function (callback, id) {
         if (err) {
           console.log(err.stack)
         } else {
-          console.log('before callback', res.rows[0].json_agg[0])
+          // console.log('before callback', res.rows[0].json_agg[0])
           callback(res.rows[0].json_agg[0])
         }
       }
@@ -96,7 +105,7 @@ var findRelated = function (callback, id) {
   pool.connect((err, client, done) => {
     if (err) throw err
     client.query(
-      `EXPLAIN select array_agg(related_product_id) as tag_arr from related  where current_product_id = 40344;`,
+      `select array_agg(related_product_id) as tag_arr from related  where current_product_id = ${id};`,
       (err, res) => {
         done()
         if (err) {
