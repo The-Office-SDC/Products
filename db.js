@@ -14,7 +14,7 @@ var findProducts = function (callback, start, end) {
   pool.connect((err, client, done) => {
     if (err) throw err
     client.query(
-      ` SELECT * from product where id > ${start - 1 } and id < ${end + 1 }`,
+      ` SELECT * from product where id > ${start - 1} and id < ${end + 1}`,
       (err, res) => {
         done()
         if (err) {
@@ -29,16 +29,15 @@ var findProducts = function (callback, start, end) {
 }
 
 
-  var findStyles = function (callback, id) {
-    pool.connect((err, client, done) => {
-      if (err) throw err
-      client.query(
+var findStyles = function (callback, id) {
+  pool.connect((err, client, done) => {
+    if (err) throw err
+    client.query(
+      ` SELECT productid, (select json_agg(objone) results FROM
 
-       `SELECT productid, (select json_agg(objone) results FROM
-
-        (SELECT  r.style_id,name,sale_price,original_price,default_style as "default?",
-        json_agg(rp) photos,
-         (json_build_object(k.id,(json_build_object('quantity',quantity,'size',size))))skus
+        (SELECT  style_id,name,sale_price,original_price,default_style as "default?",
+        json_agg(distinct jsonb_build_object('url',rp.url,'thumbnail_url',rp.thumbnail_url)) AS photos,
+        json_object_agg(k.id,json_build_object('quantity',quantity,'size',size)) AS skus
         FROM styles r
         LEFT OUTER JOIN photos rp
         ON rp.styleid = r.style_id
@@ -47,34 +46,31 @@ var findProducts = function (callback, start, end) {
         ON r.style_id = k.styleid
 
         WHERE r.productid = '${id}'
-        GROUP BY style_id,k.id
-        ) AS objone)
+        GROUP BY style_id
+        )AS objone)
 
-        from styles where productid = '${id}'`
-      ,
-
-        (err, res) => {
-          done()
+        from styles where productid = '${id}'
+`,
+      (err, res) => {
+        done()
         if (err) {
           console.log(err.stack)
         } else {
           // console.log('before callback', res.rows)
-          if(res.rows[0]){
+          if (res.rows[0]) {
             callback(res.rows[0])
-          }else{
+          } else {
             console.log('failed')
             callback('null')
           }
         }
-        }
-      )
-    })
-  }
-
-
+      }
+    )
+  })
+}
 
 var findFeatures = function (callback, id) {
-  console.log('find the product features id',id)
+  console.log('find the product features id', id)
   pool.connect((err, client, done) => {
     if (err) throw err
     client.query(
@@ -98,8 +94,6 @@ var findFeatures = function (callback, id) {
   })
 }
 
-
-
 var findRelated = function (callback, id) {
   console.log(id)
   pool.connect((err, client, done) => {
@@ -119,10 +113,7 @@ var findRelated = function (callback, id) {
   })
 }
 
-
 exports.findProducts = findProducts
 exports.findStyles = findStyles
 exports.findFeatures = findFeatures
 exports.findRelated = findRelated
-
-
