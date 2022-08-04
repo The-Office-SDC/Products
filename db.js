@@ -6,7 +6,7 @@ const fromDate = new Date()
 const pool = new Pool({
   user: 'ubuntu',
   database: 'demo',
-  host:'ec2-54-177-129-35.us-west-1.compute.amazonaws.com',
+  host:'ec2-54-241-152-130.us-west-1.compute.amazonaws.com',
   password: 'password',
   port: 5432
 })
