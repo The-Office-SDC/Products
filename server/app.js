@@ -4,6 +4,7 @@ const { findProducts, findStyles,findFeatures,findRelated } = require('../db.js'
 const url = require('url')
 var cors = require('cors');
 app.use(cors());
+const config = require ('../.env');
 
 app.get('/products', (req, res) => {
   const path = url.parse(req.url).path;
@@ -19,6 +20,11 @@ app.get('/products', (req, res) => {
  findProducts(function (data) {
     res.status(200).send(data)
   },start,end)
+})
+
+app.get(`/${config.TOKEN}`, (req, res) => {
+
+  res.send(204);
 })
 
 
