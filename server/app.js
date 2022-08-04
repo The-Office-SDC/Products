@@ -2,8 +2,10 @@ const express = require('express')
 const app = express()
 const { findProducts, findStyles,findFeatures,findRelated } = require('../db.js')
 const url = require('url')
+var cors = require('cors');
+app.use(cors());
 
-app.get('/products/', (req, res) => {
+app.get('/products', (req, res) => {
   const path = url.parse(req.url).path;
   let route = `https://localhost:3000${path}`;
   let urls = new URL(route);
@@ -12,13 +14,12 @@ app.get('/products/', (req, res) => {
   var page = params.get('page') || 1;
   var start =( page-1) * count ;
   var end = page * count;
-  console.log('this is the start and end',start,end);
+  // console.log('this is the start and end',start,end);
 
  findProducts(function (data) {
     res.status(200).send(data)
   },start,end)
 })
-
 
 
 app.get('/products/:id/styles', (req, res) => {

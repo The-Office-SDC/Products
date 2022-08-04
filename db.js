@@ -1,45 +1,53 @@
 const { Pool, Client } = require('pg')
+var cache = require('js-cache')
 
 const fromDate = new Date()
 
 const pool = new Pool({
-  user: 'air',
-  host: 'localhost',
+  user: 'ubuntu',
   database: 'demo',
-  password: '',
+  host:'ec2-54-177-129-35.us-west-1.compute.amazonaws.com',
+  password: 'password',
   port: 5432
 })
 
 var findProducts = function (callback, start, end) {
-  pool.connect((err, client, done) => {
-    if (err) throw err
-    client.query(
-      ` SELECT * from product where id > ${start - 1} and id < ${end + 1}`,
-      (err, res) => {
-        done()
-        if (err) {
-          console.log(err.stack)
-        } else {
-          // console.log('before callback', res.rows)
-          callback(res.rows)
+  // if (cache.get(`${(start, end)}`)) {
+  //   console.log('found cache');
+  //   callback(cache.get(`${(start, end)}`));
+  // } else {
+    pool.connect((err, client, done) => {
+      if (err) throw err;
+      client.query(
+        ` SELECT * from product where id > ${start - 1} and id < ${end + 1}`,
+        (err, res) => {
+          done()
+          if (err) {
+            console.log(err.stack)
+          } else {
+            // console.log('before callback', res.rows)
+            cache.set(`${(start, end)}`, res.rows)
+            callback(res.rows)
+          }
         }
-      }
-    )
-  })
+      )
+    })
+  // }
 }
-
+// cache.set('lorem', 'ipsum', 60000);
+// console.log(cache.get('lorem'));
 
 var findStyles = function (callback, id) {
   pool.connect((err, client, done) => {
     if (err) throw err
     client.query(
-      ` SELECT productid, (select json_agg(objone) results FROM
+      ` SELECT productid, (select json_agg(obj) results FROM
 
         (SELECT  style_id,name,sale_price,original_price,default_style as "default?",
         json_agg(distinct jsonb_build_object('url',rp.url,'thumbnail_url',rp.thumbnail_url)) AS photos,
         json_object_agg(k.id,json_build_object('quantity',quantity,'size',size)) AS skus
         FROM styles r
-        LEFT OUTER JOIN photos rp
+        LEFT JOIN photos rp
         ON rp.styleid = r.style_id
 
         LEFT JOIN skus k
@@ -47,7 +55,7 @@ var findStyles = function (callback, id) {
 
         WHERE r.productid = '${id}'
         GROUP BY style_id
-        )AS objone)
+        )AS obj)
 
         from styles where productid = '${id}'
 `,
@@ -99,7 +107,8 @@ var findRelated = function (callback, id) {
   pool.connect((err, client, done) => {
     if (err) throw err
     client.query(
-      `select array_agg(related_product_id) as tag_arr from related  where current_product_id = ${id};`,
+      `SELECT array_agg(related_product_id) AS tag_arr
+       FROM related where current_product_id = ${id}`,
       (err, res) => {
         done()
         if (err) {

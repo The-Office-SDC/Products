@@ -39,7 +39,7 @@ describe('GET /products/?count=2&page=2', function () {
 
 describe('GET /products/5/styles', function () {
   it('returns all styles in an object', async function () {
-    this.timeout(10000)
+    this.timeout(8000)
     const response = await request(app)
       .get('/products/5/styles')
       .set('Accept', 'application/json')

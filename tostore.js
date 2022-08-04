@@ -219,23 +219,16 @@ issues with GROUP BY :
 
 FROM Jennifer
 
-`SELECT id AS product_id,
-       (SELECT json_agg(json_build_object(
-         'style_id', styles.style_id,'name', styles.name,'original_price', styles.original_price,'sale_price', styles.default_style,'default?', styles.default_style,'photos',
-           (SELECT json_agg(json_build_object(
-             'thumbnail_url', photos.thumbnail_url,
-             'url', photos.url))
+SELECT id AS product_id,
+       (SELECT json_agg(json_build_object('style_id', styles.style_id,'name', styles.name,'original_price', styles.original_price,'sale_price', styles.default_style,'default?', styles.default_style,
+         'photos', (SELECT json_agg(json_build_object('thumbnail_url', photos.thumbnail_url,'url', photos.url))
            FROM photos
            WHERE photos.styleid = styles.style_id),
-         'skus', (SELECT json_object_agg(
-           skus.id,
-           json_build_object(
-             'quantity', skus.quantity,
-             'size', skus.size))
+         'skus', (SELECT json_object_agg(skus.id,json_build_object('quantity', skus.quantity,'size', skus.size))
            FROM skus
            WHERE skus.styleid = styles.style_id)))
        FROM styles
        WHERE styles.productid = '${id}')
-       AS results
-      FROM product
-      WHERE id = ${id}`
+AS results
+FROM product
+WHERE id = '${id}'
