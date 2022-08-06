@@ -6,7 +6,7 @@ const fromDate = new Date()
 const pool = new Pool({
   user: 'ubuntu',
   database: 'demo',
-  host:'ec2-54-241-152-130.us-west-1.compute.amazonaws.com',
+  host:'ec2-52-53-181-229.us-west-1.compute.amazonaws.com',
   password: 'password',
   port: 5432
 })
@@ -78,7 +78,7 @@ var findStyles = function (callback, id) {
 }
 
 var findFeatures = function (callback, id) {
-  console.log('find the product features id', id)
+ // console.log('find the product features id', id)
   pool.connect((err, client, done) => {
     if (err) throw err
     client.query(
@@ -103,7 +103,8 @@ var findFeatures = function (callback, id) {
 }
 
 var findRelated = function (callback, id) {
-  console.log(id)
+ //console.log(id)
+
   pool.connect((err, client, done) => {
     if (err) throw err
     client.query(

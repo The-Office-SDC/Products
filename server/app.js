@@ -24,7 +24,7 @@ app.get('/products', (req, res) => {
 
 app.get(`/${config.TOKEN}`, (req, res) => {
 
-  res.send(204);
+  res.send('loaderio-d559156522d93f2a293d0d9afcb8946e');
 })
 
 
